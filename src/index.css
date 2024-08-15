@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.genericThead {
+  @apply py-5 px-6 text-left text-sm font-semibold text-gray-800 capitalize tracking-wide;
+}
+
+.genericTbody {
+  @apply pl-6 py-4 text-sm text-left text-gray-500 capitalize;
+}
+
+.genericTrow {
+  @apply font-medium relative hover:bg-gray-100 hover:cursor-pointer hover:shadow hover:translate-x-0.5 hover:translate-y-0.5 border-t transition-all duration-200 ;
+}
+
+.status {
+  @apply capitalize px-3 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full tracking-wider;
+}
+
+.skeletonTd {
+  @apply bg-gray-200 animate-pulse w-10 h-3 block rounded-full leading-5;
+}
+
+.formStyle {
+  @apply bg-gray-50 p-10 rounded-md shadow-md space-y-10
+}
+
+.labelStyle {
+  @apply text-sm/6 font-medium text-gray-800
+}
+
+.descriptionStyle {
+  @apply text-sm text-gray-500
+}
+
+.textAreaStyle{
+  @apply mt-3 block w-full resize-none rounded-lg border border-gray-300 py-1.5 px-3 text-sm/6 text-gray-800 focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25 focus:shadow bg-white
+}
+
+.textFieldStyle{
+  @apply mt-3 block w-full rounded-lg border border-gray-300 py-1.5 px-3 text-sm/6 text-gray-800 focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25 focus:shadow
+}

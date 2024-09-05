@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.genericThead {
+  @apply py-5 px-6 text-left text-sm font-semibold text-gray-800 capitalize tracking-wide;
+}
+
+.genericTbody {
+  @apply pl-6 py-4 text-sm text-left text-gray-500 capitalize;
+}
+
+.genericTrow {
+  @apply font-medium relative hover:bg-gray-100 hover:cursor-pointer hover:shadow hover:translate-x-0.5 hover:translate-y-0.5 border-t transition-all duration-200;
+}
+
+.status {
+  @apply capitalize px-3 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full tracking-wider;
+}
+
+.skeletonTd {
+  @apply bg-gray-200 animate-pulse w-10 h-3 block rounded-full leading-10 my-1;
+}
+
+.formStyle {
+  @apply bg-gray-50 p-10 rounded-md shadow-md space-y-10;
+}
+
+.labelStyle {
+  @apply text-sm/6 font-medium text-gray-800;
+}
+
+.descriptionStyle {
+  @apply text-sm text-gray-500;
+}
+
+.textAreaStyle {
+  @apply mt-3 block w-full resize-none rounded-lg border border-gray-300 py-1.5 px-3 text-sm/6 text-gray-800 focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25 focus:shadow;
+}
+
+.textFieldStyle {
+  @apply mt-3 block w-full rounded-lg border border-gray-300 py-1.5 px-3 text-sm/6 text-gray-800 focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25 focus:shadow;
+}
+
+.skeletonTd {
+  @apply inline-block bg-gray-200 animate-pulse h-5 rounded;
+}
+
+.genericPrimaryBtn {
+  @apply w-max flex justify-center gap-1 hover:shadow-md bg-gradient-to-t from-[#333] to-[#555] transition-all px-4 py-2 text-sm font-medium tracking-wide text-white border rounded-lg;
+}
+
+.genericTertinaryBtn {
+  @apply rounded-md border bg-gray-300 hover:scale-105 tracking-wider active:scale-90 transition-all py-1.5 px-3 text-sm/6 font-semibold text-[#444];
+}
+
+.genericCancelBtn {
+  @apply w-max flex justify-center gap-1 hover:shadow-md bg-gradient-to-t from-red-500 to-red-400 transition-all px-4 py-2 text-sm font-medium tracking-wide text-white border rounded-lg;
+}
+
+.genericDisablePrimary {
+  @apply w-max flex justify-center gap-1 cursor-not-allowed bg-gray-300 text-gray-500  px-4 py-2 text-sm tracking-wide border rounded-lg;
+}
+
+.dialogTitle {
+  @apply text-center text-xl font-medium text-gray-800 flex items-center gap-2;
+}
+
+.dialogPanel {
+  @apply flex flex-col justify-center items-center w-full max-w-2xl h-[250px] shadow-xl border border-[#555] rounded-xl bg-gray-50 p-6  duration-300 ease-out;
+}

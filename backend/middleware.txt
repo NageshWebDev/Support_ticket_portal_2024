@@ -1,0 +1,18 @@
+What is Middleware in Express JS
+Middleware is a request handler that allows you to intercept and manipulate
+requests and responses before they reach route handlers.
+
+Types of Middleware:
+
+1.Application-level middleware: Bound to the entire application using app.use() or app.METHOD()
+ and executes for all routes.
+
+2.Router-level middleware: Associated with specific routes using router.use() or router.METHOD()
+ and executes for routes defined within that router.
+
+3.Error-handling middleware: Handles errors during the request-response cycle.
+Defined with four parameters (err, req, res, next).
+
+4.Built-in middleware: Provided by Express (e.g., express.static, express.json, etc.).
+
+5.Third-party middleware: Developed by external packages (e.g., body-parser, morgan, etc.).

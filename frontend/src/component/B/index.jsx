@@ -18,7 +18,6 @@ export function B() {
 
   useEffect(() => {
     const status = searchParams.get("status");
-    console.log("🚀 ~ useEffect ~ status:", status);
 
     if (!isLoading && status) {
       const idx = filterOptions.findIndex((option) => option.id === status);

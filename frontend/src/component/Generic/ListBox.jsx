@@ -24,9 +24,13 @@ export default function GenericListBox({
 
   return (
     <div className="w-full relative">
-      <input type="hidden" name={name} value={selected?.id} />
+      <input
+        type="hidden"
+        name={name}
+        value={selected?.id || "select an option"}
+      />
       <Listbox
-        value={selected}
+        value={selected || "select an option"}
         onChange={setSelected}
         disabled={disabled}
         className={loading ? "animate-pulse" : "animate-none"}
@@ -45,7 +49,7 @@ export default function GenericListBox({
           </ListboxButton>
           <ListboxOptions
             transition
-            className="shadow cursor-pointer absolute w-full mt-1 max-h-60 overflow-auto rounded-lg bg-white p-1 focus:outline-none"
+            className="shadow cursor-pointer absolute w-full mt-1 max-h-60 overflow-auto rounded-lg bg-white p-1 focus:outline-none z-10"
           >
             {options.map((data) => (
               <ListboxOption
@@ -54,7 +58,9 @@ export default function GenericListBox({
                 className="font-medium group flex items-center gap-2 rounded py-1.5 px-3 select-none data-[focus]:bg-gray-200"
               >
                 <CheckIcon className="invisible w-4 h-4 text-gray-800 group-data-[selected]:visible" />
-                <div className="text-sm/6 text-gray-800">{data.name}</div>
+                <div className="text-sm/6 text-gray-800 capitalize">
+                  {data.name}
+                </div>
               </ListboxOption>
             ))}
           </ListboxOptions>

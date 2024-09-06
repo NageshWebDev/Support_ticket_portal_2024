@@ -4,8 +4,10 @@ import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
 import { NavLink } from "react-router-dom";
 import {
   useDeleteUserTicketMutation,
+  useGetAdminEmailAndIdListQuery,
   useGetAllUserTicketsQuery,
   useGetSpecificUserTicketQuery,
+  useUpdateUserTicketAssigneeMutation,
   useUpdateUserTicketStatusMutation,
 } from "../../store/api/userTicketAPI";
 import getStatusClass from "../../util/getStatusClasss";
@@ -17,7 +19,7 @@ import {
   filterIdMap,
   filterName,
 } from "../../util/constant";
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import GenericDialogBox from "../Generic/Dialog";
 import { Button, DialogTitle } from "@headlessui/react";
 import { useSelector } from "react-redux";
@@ -234,31 +236,54 @@ function TicketDetails({
   selectedOption,
   genericDialogRef,
 }) {
-  const formRef = useRef();
-  const userId = useSelector((state) => state.userInfoReducer.userId);
-
-  let specificTicketDetailsData = specificTicketDetails?.data;
+  const specificTicketDetailsData = specificTicketDetails?.data;
   const status = specificTicketDetailsData?.status;
-  if (status === "Open") {
-    console.log("status : ", status);
-  }
+  const isTicketOpen = status === "Open";
+  const formRefUpdateStatus = useRef();
+  const formRefUpdateAssignee = useRef();
+  const userId = useSelector((state) => state.userInfoReducer.userId);
+  const [adminList, setAdminList] = useState([]);
+
+  const { data: adminListData, isLoading: fetchingAdminList } =
+    useGetAdminEmailAndIdListQuery(
+      { userId },
+      {
+        skip: !isTicketOpen,
+      }
+    );
+
+  useEffect(() => {
+    if (isTicketOpen && !fetchingAdminList) {
+      //get Admin Email And Id List
+      const data = adminListData?.data.map((detail) => ({
+        name: detail.name,
+        id: detail._id,
+      }));
+      setAdminList(data);
+    }
+  }, [isTicketOpen, fetchingAdminList]);
 
   const updatedTicketDetails = {
     ...specificTicketDetailsData,
     createdAt: formatDatAndTime(specificTicketDetailsData.createdAt),
     updatedAt: formatDatAndTime(specificTicketDetailsData.updatedAt),
   };
+  console.log("🚀 ~ updatedTicketDetails:", updatedTicketDetails);
 
   // To update status of user ticket
   const [updateUserTicketStatus, { isLoading: isUpdatingTicket }] =
     useUpdateUserTicketStatusMutation();
 
+  // To update assignee of user ticket
+  const [updateUserTicketAssignee, { isLoading: isUpdatingAssignee }] =
+    useUpdateUserTicketAssigneeMutation();
+
   // To refetch latest user tickets
   const { refetch: refetchAllTickets } = useGetAllUserTicketsQuery(userId);
 
-  async function onSubmitHandler(e) {
+  async function onUpdateStatusHandler(e) {
     e.preventDefault();
-    const formData = new FormData(formRef.current);
+    const formData = new FormData(formRefUpdateStatus.current);
     const filterId = filterIdMap[formData.get("status")];
     try {
       await updateUserTicketStatus({
@@ -271,9 +296,24 @@ function TicketDetails({
     } catch (error) {}
   }
 
+  async function onUpdateAssigneeHandler(e) {
+    e.preventDefault();
+    const formData = new FormData(formRefUpdateAssignee.current);
+    const assigneeId = formData.get("assignee");
+    try {
+      await updateUserTicketAssignee({
+        userId,
+        ticketId,
+        assigneeId: { assigneeId },
+      });
+      // Manually refetch the data
+      await refetchAllTickets();
+    } catch (error) {}
+  }
+
   return (
     <section className="formStyle !space-y-5">
-      <div className="flex w-full">
+      <div className="flex justify-between w-full">
         <h1 className="text-2xl flex gap-2 justify-between items-center">
           Ticket Status :
           <span
@@ -284,20 +324,8 @@ function TicketDetails({
             {filterName[updatedTicketDetails?.status]}
           </span>
         </h1>
-
-        {/* <div>
-          <Field>
-            <Label className="labelStyle">Assigned To</Label>
-            <div className="mt-3">
-              <GenericListBox
-                name="userId"
-                options={userList}
-                selectedOption={userList[0]}
-              />
-            </div>
-          </Field>
-        </div> */}
       </div>
+
       {/* Overview */}
       <section>
         <h1 className="font-medium border-b-2 border-gray-400 pb-3">
@@ -328,8 +356,8 @@ function TicketDetails({
               Mark ticket as
             </p>
             <form
-              ref={formRef}
-              onSubmit={onSubmitHandler}
+              ref={formRefUpdateStatus}
+              onSubmit={onUpdateStatusHandler}
               className="col-span-2 grid grid-cols-2"
             >
               <GenericListBox
@@ -341,7 +369,7 @@ function TicketDetails({
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className={`!w-48 ${
+                  className={`!w-52 ${
                     isUpdatingTicket
                       ? "genericDisablePrimary"
                       : "genericPrimaryBtn"
@@ -355,7 +383,41 @@ function TicketDetails({
             </form>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 divide-y-2">
+          <div className="grid grid-cols-3 p-5 text-sm">
+            <p className="font-medium col-span-1 capitalize flex items-center">
+              Assign Ticket To
+            </p>
+            <form
+              ref={formRefUpdateAssignee}
+              onSubmit={onUpdateAssigneeHandler}
+              className="col-span-2 grid grid-cols-2"
+            >
+              <GenericListBox
+                name="assignee"
+                className="col-span-1"
+                options={adminList}
+              />
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className={`!w-52 ${
+                    isUpdatingAssignee
+                      ? "genericDisablePrimary"
+                      : "genericPrimaryBtn"
+                  }`}
+                >
+                  {isUpdatingAssignee
+                    ? "Updating Ticket Assignee"
+                    : "Update Ticket Assignee"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </section>
+
       {/* Delete ticket */}
       <section>
         <h1 className="font-medium border-b-2 border-gray-400 pb-3">

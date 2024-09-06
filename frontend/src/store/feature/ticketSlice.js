@@ -68,16 +68,13 @@ export const ticketSlice = createSlice({
     },
 
     filterTicketData(state, action) {
-      console.log("filter");
       const { filterId } = action.payload;
-      console.log("🚀 ~ filterTicketData ~ filterId:", filterId);
       state.filterId = filterId;
       state.ticketData = applySearchFilter(
         state.ticketDataOriginal,
         state.filterId,
         state.searchBy
       );
-      console.log(state.ticketData);
     },
 
     searchTicketData(state, action) {

@@ -101,6 +101,21 @@ export const userTicketAPI = createApi({
       ],
     }),
     /**
+     * To update details of open ticket
+     */
+    updateUserTicketAssignee: builder.mutation({
+      query: ({ userId, ticketId, assigneeId }) => ({
+        url: `/${userId}/update-ticket-assignee/${ticketId}`,
+        method: "PATCH",
+        body: assigneeId,
+      }),
+      // The reason i am not invalidating "[Tickets]",
+      // because I am manually refetching the tickets after ticket updation
+      invalidatesTags: (result, error, arg) => [
+        { type: "SpecificUserTicket", ticketId: arg.ticketId },
+      ],
+    }),
+    /**
      * To delete ticket
      */
     deleteUserTicket: builder.mutation({
@@ -115,10 +130,12 @@ export const userTicketAPI = createApi({
 
 export const {
   useGetAllUserTicketsQuery,
+  useGetAdminEmailAndIdListQuery,
   useGetUsersEmailAndIdListQuery,
   useCreateUserTicketMutation,
   useGetSpecificUserTicketQuery,
   useUpdateUserTicketMutation,
   useUpdateUserTicketStatusMutation,
+  useUpdateUserTicketAssigneeMutation,
   useDeleteUserTicketMutation,
 } = userTicketAPI;

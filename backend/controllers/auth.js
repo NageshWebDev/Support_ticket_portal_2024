@@ -62,7 +62,6 @@ exports.login = async (req, res, next) => {
     }
 
     const passwordMatch = await user.comparePassword(password);
-    console.log("🚀 ~ exports.login= ~ passwordMatch:", passwordMatch);
     if (!passwordMatch) {
       return res
         .status(401)

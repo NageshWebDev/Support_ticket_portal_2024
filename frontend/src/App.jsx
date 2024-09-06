@@ -12,9 +12,13 @@ import { useSelector } from "react-redux";
 import Dashboard from "./component/Dashboard";
 
 function TicketViewWrapper() {
-  const isAdmin =
-    useSelector((state) => state.userInfoReducer.userRole) === "admin";
-  return isAdmin ? <AcknowledgeTicket /> : <TicketDetails />;
+  const userRole = useSelector((state) => state.userInfoReducer.userRole);
+
+  return ["admin", "super-admin"].includes(userRole) ? (
+    <AcknowledgeTicket />
+  ) : (
+    <TicketDetails />
+  );
 }
 
 const router = createBrowserRouter([

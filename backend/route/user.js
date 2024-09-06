@@ -6,17 +6,21 @@ const upload = multer();
 const {
   getUserById,
   getUsersEmailAndIdList,
+  getAdminEmailAndIdList,
   getUserTickets,
   getUserTicket,
   createUserTicket,
   updateUserTicket,
   updateUserTicketStatus,
+  updateUserTicketAssignee,
   deleteUserTicket,
 } = require("../controllers/user");
 
 router.get("/:userId", authenticate, getUserById);
 
 router.get("/:userId/get-users", authenticate, getUsersEmailAndIdList);
+
+router.get("/:userId/get-admin", authenticate, getAdminEmailAndIdList);
 
 router.get("/:userId/get-tickets", authenticate, getUserTickets);
 
@@ -41,6 +45,13 @@ router.patch(
   authenticate,
   upload.none(),
   updateUserTicketStatus
+);
+
+router.patch(
+  "/:userId/update-ticket-assignee/:ticketId",
+  authenticate,
+  upload.none(),
+  updateUserTicketAssignee
 );
 
 router.delete(

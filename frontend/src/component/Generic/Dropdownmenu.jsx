@@ -2,8 +2,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
   ChevronDownIcon,
   PencilIcon,
-  Square2StackIcon,
-  ArrowLeftStartOnRectangleIcon,
+  Square2StackIcon
 } from "@heroicons/react/16/solid";
 import { NavLink } from "react-router-dom";
 
@@ -38,16 +37,7 @@ export default function DropdownMenu() {
               View Tickets
             </NavLink>
           </MenuItem>
-          <div className="my-1 h-px mx-2 bg-gray-200" />
-          <MenuItem className="flex justify-between">
-            <NavLink
-              to="/"
-              className="font-medium group flex w-full items-center rounded py-1.5 px-3  text-red-700 hover:text-red-500"
-            >
-              Sign Out
-              <ArrowLeftStartOnRectangleIcon className="size-4 group-hover:-translate-x-2 transition-all duration-500" />
-            </NavLink>
-          </MenuItem>
+          
         </MenuItems>
       </Menu>
     </div>

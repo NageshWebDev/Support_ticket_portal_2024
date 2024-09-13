@@ -1,6 +1,6 @@
 import { Description, Field, Input, Label, Button } from "@headlessui/react";
-import { useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useRegisterMutation } from "../../store/api/loginAPI";
 import {
@@ -10,12 +10,20 @@ import {
   setUserId,
   setUserRole,
 } from "../../store/feature/userInfoSlice";
+import { setUserInfoOnLocalStorage } from "../../util/localStorage";
 
 export function Signup() {
   const formRef = useRef();
+  const tokenId = useSelector((state) => state.userInfoReducer.tokenId);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const [register, { isLoading }] = useRegisterMutation();
+
+  useEffect(() => {
+    if (tokenId) {
+      navigateTo("/");
+    }
+  }, [tokenId, navigateTo]);
 
   async function onSubmitHandler(e) {
     e.preventDefault();
@@ -36,6 +44,13 @@ export function Signup() {
       dispatch(setTokenId({ tokenId }));
       dispatch(setUserId({ userId }));
       dispatch(setUserRole({ userRole }));
+      setUserInfoOnLocalStorage({
+        tokenId,
+        userEmail,
+        userName,
+        userId,
+        userRole,
+      });
       navigateTo("/");
     } catch (error) {
       console.error("Failed to create the ticket", error);
@@ -43,7 +58,7 @@ export function Signup() {
   }
 
   return (
-    <section className="h-full flex justify-center items-center">
+    <section className="h-full w-full flex justify-center items-center">
       <div>
         <h1 className="my-5 font-medium border-b text-2xl border-gray-300 pb-3">
           Sign Up
@@ -88,6 +103,7 @@ export function Signup() {
                 Choose a secure password for your account.
               </Description>
               <Input
+              type="password"
                 placeholder="Type password"
                 name="password"
                 className="textFieldStyle"

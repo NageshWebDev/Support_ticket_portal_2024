@@ -20,7 +20,7 @@ export const userTicketAPI = createApi({
      */
     getAllUserTickets: builder.query({
       // function defines the end-point for the query
-      query: (userId) => `/${userId}/get-tickets`,
+      query: ({ userId }) => `/${userId}/get-tickets`,
 
       // Tags are used in RTK Query to handle cache invalidation and automatic refetching.
       providesTags: (result, error, arg) => {
@@ -34,6 +34,19 @@ export const userTicketAPI = createApi({
         return tags;
       },
       keepUnusedDataFor: 3600,
+    }),
+    getAssignedTickets: builder.query({
+      query: ({ userId }) => `/${userId}/get-tickets`,
+      providesTags: () => ["AssignedTickets"],
+    }),
+    getUserProfile: builder.query({
+      query: ({ userId }) => `/${userId}`,
+      keepUnusedDataFor: 3600,
+    }),
+    getAllTicketOverview: builder.query({
+      query: ({ userId }) => `/${userId}/all-ticket-overview`,
+      keepUnusedDataFor: 1,
+      invalidatesTags: ["Tickets"],
     }),
     /**
      * To get details of specific ticket
@@ -56,6 +69,16 @@ export const userTicketAPI = createApi({
      */
     getAdminEmailAndIdList: builder.query({
       query: ({ userId }) => `/${userId}/get-admin`,
+      keepUnusedDataFor: 1,
+      providesTags: ["AdminDetails"],
+      invalidatesTags: ["Tickets"],
+    }),
+    /**
+     * To get admin email, names and ids
+     */
+    getSuperAdminDetails: builder.query({
+      query: ({ userId }) => `/${userId}/get-super-admin`,
+      keepUnusedDataFor: 3600,
     }),
     /**
      * To create new ticket
@@ -83,6 +106,8 @@ export const userTicketAPI = createApi({
       // because I am manually refetching the tickets after ticket updation
       invalidatesTags: (result, error, arg) => [
         { type: "SpecificUserTicket", ticketId: arg.ticketId },
+        { type: "AssignedTickets" },
+        { type: "AdminDetails" },        
       ],
     }),
     /**
@@ -98,6 +123,8 @@ export const userTicketAPI = createApi({
       // because I am manually refetching the tickets after ticket updation
       invalidatesTags: (result, error, arg) => [
         { type: "SpecificUserTicket", ticketId: arg.ticketId },
+        { type: "AssignedTickets" },
+        { type: "AdminDetails" },        
       ],
     }),
     /**
@@ -113,6 +140,8 @@ export const userTicketAPI = createApi({
       // because I am manually refetching the tickets after ticket updation
       invalidatesTags: (result, error, arg) => [
         { type: "SpecificUserTicket", ticketId: arg.ticketId },
+        { type: "AssignedTickets" },
+        { type: "AdminDetails" },        
       ],
     }),
     /**
@@ -123,15 +152,19 @@ export const userTicketAPI = createApi({
         url: `${userId}/delete-ticket/${ticketId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Tickets"],
+      invalidatesTags: ["Tickets", "AdminDetails", "AssignedTickets"],
     }),
   }),
 });
 
 export const {
+  useGetUserProfileQuery,
+  useGetAssignedTicketsQuery,
   useGetAllUserTicketsQuery,
+  useGetAllTicketOverviewQuery,
   useGetAdminEmailAndIdListQuery,
   useGetUsersEmailAndIdListQuery,
+  useGetSuperAdminDetailsQuery,
   useCreateUserTicketMutation,
   useGetSpecificUserTicketQuery,
   useUpdateUserTicketMutation,

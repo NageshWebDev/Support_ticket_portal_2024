@@ -1,7 +1,4 @@
-import { Field, Label } from "@headlessui/react";
 import { useParams } from "react-router";
-import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
-import { NavLink } from "react-router-dom";
 import {
   useDeleteUserTicketMutation,
   useGetAdminEmailAndIdListQuery,
@@ -10,7 +7,7 @@ import {
   useUpdateUserTicketAssigneeMutation,
   useUpdateUserTicketStatusMutation,
 } from "../../store/api/userTicketAPI";
-import getStatusClass from "../../util/getStatusClasss";
+import getStatusClass from "../../util/getStatusClass";
 import GenericListBox from "../Generic/ListBox";
 import {
   markAsOptions,
@@ -19,7 +16,7 @@ import {
   filterIdMap,
   filterName,
 } from "../../util/constant";
-import { useRef, useMemo, useState, useEffect } from "react";
+import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import GenericDialogBox from "../Generic/Dialog";
 import { Button, DialogTitle } from "@headlessui/react";
 import { useSelector } from "react-redux";
@@ -41,7 +38,17 @@ export default function AcknowledgeTicket() {
     useDeleteUserTicketMutation();
 
   // To refetch latest user tickets
-  const { refetch: refetchAllTickets } = useGetAllUserTicketsQuery(userId);
+  const { refetch: refetchAllTickets } = useGetAllUserTicketsQuery({ userId });
+
+  const onDeleteHandler = useCallback(async () => {
+    try {
+      await deleteUserTicket({ userId, ticketId }).unwrap();
+      genericDialogRef.current.close();
+      await refetchAllTickets();
+    } catch (error) {
+      console.error("Error deleting ticket:", error);
+    }
+  }, [deleteUserTicket, refetchAllTickets, ticketId, userId]);
 
   const selectedOption = useMemo(() => {
     if (specificTicketDetails) {
@@ -103,30 +110,11 @@ export default function AcknowledgeTicket() {
         </p>
       </div>
     ),
-    [ticketId]
+    []
   );
 
-  async function onDeleteHandler() {
-    try {
-      await deleteUserTicket({ userId, ticketId }).unwrap();
-      genericDialogRef.current.close();
-      await refetchAllTickets();
-    } catch (error) {
-      console.error("Error deleting ticket:", error);
-    }
-  }
-
   return (
-    <section className="min-h-full">
-      <div className="absolute left-0 bg-gray-50 px-3 py-1 rounded-r-full shadow-md">
-        <NavLink
-          to={-1}
-          className="group text-gray-600 hover:text-gray-800 flex items-center gap-1 px-2 text-sm font-medium"
-        >
-          <ArrowLongLeftIcon className="group-hover:-translate-x-2 size-5 duration-500 transition-all" />
-          Back
-        </NavLink>
-      </div>
+    <section className="w-full h-full">
       {fetchingSpecificTicket && <LoadingSkeleton />}
       {!isDeleted && specificTicketDetails?.data && (
         <TicketDetails
@@ -162,6 +150,8 @@ export default function AcknowledgeTicket() {
 }
 
 function LoadingSkeleton() {
+  const userRole = useSelector((state) => state.userInfoReducer.userRole);
+
   return (
     <section className="formStyle !space-y-5">
       <div className="flex w-full justify-between items-center">
@@ -194,6 +184,25 @@ function LoadingSkeleton() {
         <h1 className="font-medium border-b-2 border-gray-400 pb-3">
           Management
         </h1>
+
+        {userRole === "SUPER_ADMIN" && (
+          <div className="grid grid-cols-1 divide-y-2">
+            <div className="grid grid-cols-3 p-5 text-sm">
+              <p className="font-medium col-span-1 capitalize flex items-center">
+                Assign Ticket To
+              </p>
+              <div className="col-span-2 grid grid-cols-2">
+                <span className="skeletonTd !h-8 !w-96 flex items-center"></span>
+
+                <div className="flex justify-end">
+                  <button type="submit" className="!w-48 genericDisablePrimary">
+                    Update Ticket Assignee
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 divide-y-2">
           <div className="grid grid-cols-3 p-5 text-sm">
             <p className="font-medium col-span-1 capitalize flex items-center">
@@ -213,19 +222,21 @@ function LoadingSkeleton() {
       </section>
 
       {/* Delete ticket */}
-      <section>
-        <h1 className="font-medium border-b-2 border-gray-400 pb-3">
-          Delete Ticket
-        </h1>
-        <div className="text-sm p-5 flex justify-between items-center">
-          <p className="font-medium text-gray-400">
-            Once ticket is deleted, they can't be retrieved back.
-          </p>
-          <button className="genericDisablePrimary !w-48">
-            Proceed To Delete
-          </button>
-        </div>
-      </section>
+      {userRole === "SUPER_ADMIN" && (
+        <section>
+          <h1 className="font-medium border-b-2 border-gray-400 pb-3">
+            Delete Ticket
+          </h1>
+          <div className="text-sm p-5 flex justify-between items-center">
+            <p className="font-medium text-gray-400">
+              Once ticket is deleted, they can't be retrieved back.
+            </p>
+            <button className="genericDisablePrimary !w-48">
+              Proceed To Delete
+            </button>
+          </div>
+        </section>
+      )}
     </section>
   );
 }
@@ -237,38 +248,38 @@ function TicketDetails({
   genericDialogRef,
 }) {
   const specificTicketDetailsData = specificTicketDetails?.data;
-  const status = specificTicketDetailsData?.status;
-  const isTicketOpen = status === "Open";
   const formRefUpdateStatus = useRef();
   const formRefUpdateAssignee = useRef();
   const userId = useSelector((state) => state.userInfoReducer.userId);
+  const userRole = useSelector((state) => state.userInfoReducer.userRole);
+
   const [adminList, setAdminList] = useState([]);
 
   const { data: adminListData, isLoading: fetchingAdminList } =
-    useGetAdminEmailAndIdListQuery(
-      { userId },
-      {
-        skip: !isTicketOpen,
-      }
-    );
+    useGetAdminEmailAndIdListQuery({ userId });
 
   useEffect(() => {
-    if (isTicketOpen && !fetchingAdminList) {
+    if (!fetchingAdminList) {
       //get Admin Email And Id List
       const data = adminListData?.data.map((detail) => ({
         name: detail.name,
         id: detail._id,
-      }));
-      setAdminList(data);
+      })).sort((adminOne, adminTwo) => adminOne.name.localeCompare(adminTwo.name)) ;
+      setAdminList(data)
     }
-  }, [isTicketOpen, fetchingAdminList]);
+  }, [fetchingAdminList, adminListData]);
 
   const updatedTicketDetails = {
     ...specificTicketDetailsData,
     createdAt: formatDatAndTime(specificTicketDetailsData.createdAt),
     updatedAt: formatDatAndTime(specificTicketDetailsData.updatedAt),
   };
-  console.log("🚀 ~ updatedTicketDetails:", updatedTicketDetails);
+  let assigneeDetails;
+  if (updatedTicketDetails?.assigneeDetails) {
+    assigneeDetails = adminList.find(
+      (admin) => admin.id === updatedTicketDetails?.assigneeDetails._id
+    );
+  }
 
   // To update status of user ticket
   const [updateUserTicketStatus, { isLoading: isUpdatingTicket }] =
@@ -279,7 +290,7 @@ function TicketDetails({
     useUpdateUserTicketAssigneeMutation();
 
   // To refetch latest user tickets
-  const { refetch: refetchAllTickets } = useGetAllUserTicketsQuery(userId);
+  const { refetch: refetchAllTickets } = useGetAllUserTicketsQuery({ userId });
 
   async function onUpdateStatusHandler(e) {
     e.preventDefault();
@@ -350,6 +361,43 @@ function TicketDetails({
         <h1 className="font-medium border-b-2 border-gray-400 pb-3">
           Management
         </h1>
+
+        {userRole === "SUPER_ADMIN" && (
+          <div className="grid grid-cols-1 divide-y-2">
+            <div className="grid grid-cols-3 p-5 text-sm">
+              <p className="font-medium col-span-1 capitalize flex items-center">
+                Assign Ticket To
+              </p>
+              <form
+                ref={formRefUpdateAssignee}
+                onSubmit={onUpdateAssigneeHandler}
+                className="col-span-2 grid grid-cols-2"
+              >
+                <GenericListBox
+                  name="assignee"
+                  className="col-span-1"
+                  options={adminList}
+                  selectedOption={assigneeDetails}
+                  disabled={fetchingAdminList}
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className={`!w-52 ${
+                      isUpdatingAssignee || isUpdatingTicket
+                        ? "genericDisablePrimary"
+                        : "genericPrimaryBtn"
+                    }`}
+                  >
+                    {isUpdatingAssignee || isUpdatingTicket
+                      ? "Updating Ticket Assignee"
+                      : "Update Ticket Assignee"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 divide-y-2">
           <div className="grid grid-cols-3 p-5 text-sm">
             <p className="font-medium col-span-1 capitalize flex items-center">
@@ -370,47 +418,14 @@ function TicketDetails({
                 <button
                   type="submit"
                   className={`!w-52 ${
-                    isUpdatingTicket
+                    isUpdatingTicket || isUpdatingAssignee
                       ? "genericDisablePrimary"
                       : "genericPrimaryBtn"
                   }`}
                 >
-                  {isUpdatingTicket
+                  {isUpdatingTicket || isUpdatingAssignee
                     ? "Updating Ticket Status"
                     : "Update Ticket Status"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 divide-y-2">
-          <div className="grid grid-cols-3 p-5 text-sm">
-            <p className="font-medium col-span-1 capitalize flex items-center">
-              Assign Ticket To
-            </p>
-            <form
-              ref={formRefUpdateAssignee}
-              onSubmit={onUpdateAssigneeHandler}
-              className="col-span-2 grid grid-cols-2"
-            >
-              <GenericListBox
-                name="assignee"
-                className="col-span-1"
-                options={adminList}
-              />
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className={`!w-52 ${
-                    isUpdatingAssignee
-                      ? "genericDisablePrimary"
-                      : "genericPrimaryBtn"
-                  }`}
-                >
-                  {isUpdatingAssignee
-                    ? "Updating Ticket Assignee"
-                    : "Update Ticket Assignee"}
                 </button>
               </div>
             </form>
@@ -419,25 +434,29 @@ function TicketDetails({
       </section>
 
       {/* Delete ticket */}
-      <section>
-        <h1 className="font-medium border-b-2 border-gray-400 pb-3">
-          Delete Ticket
-        </h1>
-        <div className="text-sm p-5 flex justify-between items-center">
-          <p className="font-medium text-red-500">
-            Once ticket is deleted, it can't be retrieved back.
-          </p>
-          <button
-            disabled={isUpdatingTicket}
-            onClick={() => genericDialogRef.current.open()}
-            className={`!w-48 ${
-              isUpdatingTicket ? "genericDisablePrimary" : "genericCancelBtn"
-            }`}
-          >
-            Proceed To Delete
-          </button>
-        </div>
-      </section>
+      {userRole === "SUPER_ADMIN" && (
+        <section>
+          <h1 className="font-medium border-b-2 border-gray-400 pb-3">
+            Delete Ticket
+          </h1>
+          <div className="text-sm p-5 flex justify-between items-center">
+            <p className="font-medium text-red-500">
+              Once ticket is deleted, it can't be retrieved back.
+            </p>
+            <button
+              disabled={isUpdatingTicket || isUpdatingAssignee}
+              onClick={() => genericDialogRef.current.open()}
+              className={`!w-52 ${
+                isUpdatingTicket || isUpdatingAssignee
+                  ? "genericDisablePrimary"
+                  : "genericCancelBtn"
+              }`}
+            >
+              Proceed To Delete
+            </button>
+          </div>
+        </section>
+      )}
     </section>
   );
 }

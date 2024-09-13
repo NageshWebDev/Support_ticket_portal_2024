@@ -12,13 +12,18 @@ const applySearchFilter = (ticketData, filterId, searchBy) => {
   let tempData = [];
 
   if (filterId === "ALL") tempData = ticketData;
+  else if (["ASSIGNED"].includes(filterId))
+    tempData = ticketData.filter((data) => data?.assigneeDetails);
+  else if (["UNASSIGNED"].includes(filterId))
+    tempData = ticketData.filter((data) => !data?.assigneeDetails);
   else tempData = ticketData.filter((data) => data.filterId === filterId);
 
   if (searchBy) {
     tempData = tempData.filter((item) => {
-      const values = Object.values(item).map((ele) =>
-        ele.toString().toLowerCase()
-      );
+      const values = Object.values(item).map((ele) => {
+        if (ele) return ele.toString().toLowerCase();
+        else return "";
+      });
       return values.join(" ").includes(searchBy.toLowerCase());
     });
   }
@@ -76,7 +81,6 @@ export const ticketSlice = createSlice({
         state.searchBy
       );
     },
-
     searchTicketData(state, action) {
       const { payload } = action;
       state.searchBy = payload || "";
@@ -86,13 +90,19 @@ export const ticketSlice = createSlice({
         state.searchBy
       );
     },
+    setTicketStoreEmpty(state) {
+      state.ticketDataOriginal = [];
+      state.ticketData = [];
+      state.filterId = "ALL";
+      state.searchBy = "";
+    },
   },
 });
 
 /*
 4th step to export the actions creator
 */
-export const { filterTicketData, searchTicketData, setTicketData } =
+export const { filterTicketData, searchTicketData, setTicketData, setTicketStoreEmpty } =
   ticketSlice.actions;
 
 export default ticketSlice.reducer;

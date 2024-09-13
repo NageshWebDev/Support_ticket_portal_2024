@@ -27,7 +27,22 @@ export const filterOptions = [
     description: "view processing tickets only",
     icon: "wrenchScrewdriver",
   },
+  {
+    id: "assigned",
+    filterId: "ASSIGNED",
+    name: "Assigned",
+    description: "view assigned tickets only",
+    icon: "documentPlusIcon",
+  },
+  {
+    id: "unassigned",
+    filterId: "UNASSIGNED",
+    name: "Unassigned",
+    description: "view unassigned tickets only",
+    icon: "documentMinusIcon",
+  },
 ];
+
 
 export const headings = [
   "title",

@@ -2,7 +2,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/16/solid";
 
 export default function TableSkeleton() {
   return (
-    <section className="formStyle h-[525px] flex flex-col justify-between">
+    <section className="formStyle h-[475px] flex flex-col justify-between">
       <table className="min-w-full">
         <thead>
           <tr className="bg-gray-200">

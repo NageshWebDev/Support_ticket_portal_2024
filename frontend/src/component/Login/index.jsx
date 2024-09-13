@@ -1,6 +1,6 @@
 import { Field, Input, Label, Button } from "@headlessui/react";
-import { useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../store/api/loginAPI";
 import {
@@ -10,12 +10,20 @@ import {
   setUserId,
   setUserRole,
 } from "../../store/feature/userInfoSlice";
+import { setUserInfoOnLocalStorage } from "../../util/localStorage";
 
 export function Login() {
+  const tokenId = useSelector((state) => state.userInfoReducer.tokenId);
   const formRef = useRef();
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const [login, { isLoading, isError, error }] = useLoginMutation();
+
+  useEffect(() => {
+    if (tokenId) {
+      navigateTo("/");
+    }
+  }, [tokenId, navigateTo]);
 
   async function onSubmitHandler(e) {
     e.preventDefault();
@@ -36,6 +44,13 @@ export function Login() {
       dispatch(setTokenId({ tokenId }));
       dispatch(setUserId({ userId }));
       dispatch(setUserRole({ userRole }));
+      setUserInfoOnLocalStorage({
+        tokenId,
+        userEmail,
+        userName,
+        userId,
+        userRole,
+      });
       navigateTo("/");
     } catch (error) {
       console.error("Failed to login :", error.data.message);
@@ -43,7 +58,7 @@ export function Login() {
   }
 
   return (
-    <section className="h-full flex justify-center items-center">
+    <section className="w-full flex justify-center items-center">
       <div className="relative w-96">
         <h1 className="my-5 font-medium border-b text-2xl border-gray-300 pb-3">
           Login
@@ -65,6 +80,7 @@ export function Login() {
             <Field>
               <Label className="labelStyle">User password</Label>
               <Input
+              type="password"
                 placeholder="Type password"
                 name="password"
                 className="textFieldStyle"

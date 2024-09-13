@@ -16,7 +16,7 @@ import {
 
 import GenericListBox from "../Generic/ListBox";
 import GenericSwitch from "../Generic/Switch";
-import getStatusClass from "../../util/getStatusClasss";
+import getStatusClass from "../../util/getStatusClass";
 import GenericLoading from "../Generic/Loading";
 import { categoryOptions, priorityOptions } from "../../util/constant";
 import { useSelector } from "react-redux";
@@ -27,10 +27,11 @@ export function ViewOrupdateUserTicket() {
   const userId = useSelector((state) => state.userInfoReducer.userId);
   const { ticketId } = useParams();
   const [isEditable, setIsEditable] = useState(false);
+  const [assignee, setAssignee] = useState("Loading Assignee Name");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState(categoryOptions[0]);
-  const [priority, setPriority] = useState(priorityOptions[0]);
+  const [category, setCategory] = useState("");
+  const [priority, setPriority] = useState("");
   const [status, setStatus] = useState("Loading Ticket Status");
 
   // To update user ticket
@@ -42,12 +43,18 @@ export function ViewOrupdateUserTicket() {
     useGetSpecificUserTicketQuery({ userId, ticketId });
 
   // To refetch latest user tickets
-  // const { refetch: refetchAllTickets } = useGetAllUserTicketsQuery(userId);
+  const { refetch: refetchAllTickets } = useGetAllUserTicketsQuery({ userId });
 
   useEffect(() => {
-    if (specificTicketDetails) {
-      const { title, description, category, priority, status } =
-        specificTicketDetails?.data;
+    if (specificTicketDetails?.data) {
+      const {
+        title,
+        description,
+        category,
+        priority,
+        status,
+        assigneeDetails,
+      } = specificTicketDetails.data;
       setTitle(title);
       setDescription(description);
       setCategory(() =>
@@ -57,6 +64,7 @@ export function ViewOrupdateUserTicket() {
         priorityOptions.find((option) => option.id === priority)
       );
       setStatus(status);
+      setAssignee(assigneeDetails?.name || "Ticket NOT Assigned yet");
     }
   }, [specificTicketDetails]);
 
@@ -82,18 +90,33 @@ export function ViewOrupdateUserTicket() {
   }
 
   return (
-    <section className="flex flex-col justify-center items-center">
+    <section>
+      <h1 className="mb-5 pb-3 font-medium border-b text-2xl border-gray-300">
+        View & Update Ticket
+      </h1>
+
       <form ref={formRef} onSubmit={onSubmitHandler} className="formStyle">
         <div className="flex justify-between items-center px-4">
-          <div className="flex items-center gap-1">
-            <span className="text-sm font-bold text-gray-700">
-              Ticket Status
-            </span>
-            <span>:</span>
-            <span className={`text-sm font-medium ${getStatusClass(status)}`}>
-              {status}
-            </span>
-          </div>
+          <main className="flex flex-col">
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-bold text-gray-700">
+                Ticket Status
+              </span>
+              <span>:</span>
+              <span className={`text-sm font-medium ${getStatusClass(status)}`}>
+                {status}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-bold text-gray-700">
+                Ticket Assigned to
+              </span>
+              <span>:</span>
+              <span className="text-sm font-medium capitalize">{assignee}</span>
+            </div>
+          </main>
+
           <div className="group relative">
             <Field disabled={fetchingSpecificTicket || status != "Open"}>
               <GenericSwitch
@@ -103,9 +126,11 @@ export function ViewOrupdateUserTicket() {
                 disabled={fetchingSpecificTicket || status != "Open"}
               />
             </Field>
-            <div className="absolute invisible opacity-0 transition-opacity duration-500 ease-in-out w-max border rounded-md p-2 shadow border-sky-200 bg-sky-100 text-xs text-gray-500 mt-1 group-hover:visible group-hover:opacity-100">
-              *Updates are only allowed when the ticket status is open.
-            </div>
+            {status !== "Open" && (
+              <div className="absolute right-0 invisible opacity-0 transition-opacity duration-500 ease-in-out w-max border rounded-md p-2 shadow border-sky-200 bg-sky-100 text-xs text-gray-500 mt-1 group-hover:visible group-hover:opacity-100">
+                *Updates are only allowed when the ticket status is open.
+              </div>
+            )}
           </div>
         </div>
 
@@ -146,7 +171,7 @@ export function ViewOrupdateUserTicket() {
           </Field>
         </div>
 
-        <div className="flex">
+        <div className="flex flex-col sm:flex-row gap-10 sm:gap-5">
           <div className="w-full px-4">
             <Field disabled={isDisabled()}>
               <Label className="labelStyle">Category</Label>
@@ -182,25 +207,6 @@ export function ViewOrupdateUserTicket() {
                   loading={fetchingSpecificTicket}
                 />
               </div>
-            </Field>
-          </div>
-        </div>
-
-        <div className="flex">
-          <div className="w-full px-4">
-            <Field disabled={isDisabled()}>
-              <Label className="labelStyle">Add File</Label>
-              <Description className="descriptionStyle">
-                Set the priority level and use your real name for accurate
-                tracking.
-              </Description>
-              <Input
-                name="file"
-                placeholder="Type full name"
-                className={`textFieldStyle ${
-                  fetchingSpecificTicket ? "animate-pulse" : "animate-none"
-                }`}
-              />
             </Field>
           </div>
         </div>

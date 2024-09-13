@@ -25,7 +25,7 @@ export default function useFetch() {
       const customResponse = {
         success: false,
         data: null,
-        message: `Request Failed for url : ${url}`,
+        message: `Request Failed for url : ${url} : ${error.message}`,
       };
       setIsError(true);
       setError(customResponse);

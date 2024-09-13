@@ -23,10 +23,10 @@ export function A() {
   const userRole = useSelector((state) => state.userInfoReducer.userRole);
   const [userList, setUserList] = useState([]);
 
-  const { data: fetchedData } = useGetUsersEmailAndIdListQuery(
+  const { isLoading:fetchingUserDetail, data: fetchedData } = useGetUsersEmailAndIdListQuery(
     { userId },
     {
-      skip: userRole !== "admin",
+      skip: !["ADMIN", "SUPER_ADMIN"].includes(userRole),
     }
   );
 
@@ -63,8 +63,8 @@ export function A() {
   }
 
   return (
-    <section className="h-full">
-      <h1 className="my-5 font-medium border-b text-2xl border-gray-300 pb-3">
+    <section className="h-full w-full">
+      <h1 className="mb-5 pb-3 font-medium border-b text-2xl border-gray-300">
         Create Ticket
       </h1>
       <form ref={formRef} onSubmit={onSubmitHandler} className="formStyle">
@@ -99,19 +99,17 @@ export function A() {
           </Field>
         </div>
 
-        <div className="flex">
+        <div className="flex flex-col xl:flex-row gap-10">
           <div className="w-full px-4">
             <Field>
               <Label className="labelStyle">Category</Label>
               <Description className="descriptionStyle">
-                Set the priority level and use your real name for accurate
-                tracking.
+                Select the category that best fits the ticket.
               </Description>
               <div className="mt-3">
                 <GenericListBox
                   name="category"
                   options={categoryOptions}
-                  selectedOption={categoryOptions[0]}
                 />
               </div>
             </Field>
@@ -121,52 +119,36 @@ export function A() {
             <Field>
               <Label className="labelStyle">Priority</Label>
               <Description className="descriptionStyle">
-                Set the priority level and use your real name for accurate
-                tracking.
+                Select the priority level of the ticket.
               </Description>
               <div className="mt-3">
                 <GenericListBox
                   name="priority"
                   options={priorityOptions}
-                  selectedOption={priorityOptions[0]}
                 />
               </div>
             </Field>
           </div>
-        </div>
 
-        <div className="flex">
-          <div className="w-full px-4">
-            <Field>
-              <Label className="labelStyle">Add File</Label>
-              <Description className="descriptionStyle">
-                Set the priority level and use your real name for accurate
-                tracking.
-              </Description>
-              <Input
-                name="file"
-                placeholder="Type full name"
-                className="textFieldStyle"
-              />
-            </Field>
-          </div>
+          
 
-          <div className="w-full px-4">
-            <Field>
-              <Label className="labelStyle">Create Ticket For</Label>
-              <Description className="descriptionStyle">
-                Set the priority level and use your real name for accurate
-                tracking.
-              </Description>
-              <div className="mt-3">
-                <GenericListBox
-                  name="userId"
-                  options={userList}
-                  selectedOption={userList[0]}
-                />
-              </div>
-            </Field>
-          </div>
+          {["ADMIN", "SUPER_ADMIN"].includes(userRole) && (
+            <div className="w-full px-4">
+              <Field>
+                <Label className="labelStyle">Employee Email</Label>
+                <Description className="descriptionStyle">
+                  Select the employee&apos;s email address.
+                </Description>
+                <div className="mt-3">
+                  <GenericListBox
+                    name="userId"
+                    options={userList}
+                    disabled={fetchingUserDetail}
+                  />
+                </div>
+              </Field>
+            </div>
+          )}
         </div>
 
         <div className="w-full flex justify-end px-4">

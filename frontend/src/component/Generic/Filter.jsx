@@ -10,36 +10,49 @@ import {
   EnvelopeIcon,
   EnvelopeOpenIcon,
   WrenchScrewdriverIcon,
+  DocumentPlusIcon,
+  DocumentMinusIcon,
 } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { filterTicketData } from "../../store/feature/ticketSlice";
+import { useSearchParams } from "react-router-dom";
 
 const iconMap = {
   inboxStack: InboxStackIcon,
   envelope: EnvelopeIcon,
   envelopeOpen: EnvelopeOpenIcon,
   wrenchScrewdriver: WrenchScrewdriverIcon,
+  documentPlusIcon: DocumentPlusIcon,
+  documentMinusIcon: DocumentMinusIcon,
 };
 
 export default function GenericFilter({ options, disabled, selectedOption }) {
   const [selected, setSelected] = useState(selectedOption);
   const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     setSelected(selectedOption);
     dispatch(filterTicketData(selectedOption));
-  }, [selectedOption]);
+  }, [selectedOption, dispatch, searchParams, setSearchParams]);
+
+  function onChangeHandler(value) {
+    setSelected(value);
+    dispatch(filterTicketData(value));
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.set("status", value.id);
+      return newParams;
+    });
+  }
 
   return (
     <div className="relative ">
       <Listbox
         disabled={disabled}
         value={selected}
-        onChange={(value) => {
-          setSelected(value);
-          dispatch(filterTicketData(value));
-        }}
+        onChange={(value) => onChangeHandler(value)}
       >
         <div className="relative">
           <ListboxButton
@@ -55,7 +68,7 @@ export default function GenericFilter({ options, disabled, selectedOption }) {
           </ListboxButton>
           <ListboxOptions
             transition
-            className="shadow cursor-pointer absolute right-0 w-max z-20 mt-1 max-h-60 overflow-auto rounded-lg bg-white p-1 focus:outline-none"
+            className="shadow cursor-pointer absolute right-0 w-max z-20 mt-1 h-max overflow-auto rounded-lg bg-white p-1 focus:outline-none"
           >
             {options.map((data) => {
               const IconComponent = iconMap[data.icon];

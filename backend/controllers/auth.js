@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const DELAY = 500;
+const Blacklist = require("../models/blacklist");
 
 // Register a new user
 exports.register = async (req, res, next) => {
@@ -24,7 +25,7 @@ exports.register = async (req, res, next) => {
       name,
       email,
       password,
-      role: "user",
+      role: "USER",
     });
 
     const token = jwt.sign({ userId: newUser._id }, process.env.SECRET_KEY, {
@@ -82,6 +83,43 @@ exports.login = async (req, res, next) => {
         userRole: user.role,
       },
       message: "Login successful",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      data: null,
+      message: error.message || "Server Error",
+    });
+  }
+};
+
+
+exports.logout = async (req, res, next) => {
+  // Get the token from the request headers (assuming a Bearer token)
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(400).json({
+      success: false,
+      data: null,
+      message: "Token not provided",
+    });
+  }
+
+  try {
+    // Decode the token to get the expiration time
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
+    // Calculate the token's expiration time
+    const expirationTime = new Date(decoded.exp * 1000); // Convert to milliseconds
+
+    // Add the token to the blacklist
+    await Blacklist.create({ token, expiresAt: expirationTime });
+
+    res.json({
+      success: true,
+      data: null,
+      message: "Logout successful, token added to blacklist",
     });
   } catch (error) {
     res.status(500).json({

@@ -43,6 +43,7 @@ export function GenericSearchBox({ disabled }) {
                 disabled ? "cursor-not-allowed" : ""
               }`}
               disabled={disabled}
+              placeholder="search on the bases of title, category and urgency"
             />
           </div>
         </Field>

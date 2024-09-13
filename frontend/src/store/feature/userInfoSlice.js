@@ -32,10 +32,17 @@ export const userInfoSlice = createSlice({
       const { userRole } = action.payload;
       state.userRole = userRole;
     },
+    setUserStoreEmpty(state) {
+      state.tokenId = null;
+      state.userId = null;
+      state.userName = null;
+      state.userEmail = null;
+      state.userRole = null;
+    },
   },
 });
 
-export const { setUserName, setUserEmail, setTokenId, setUserId, setUserRole } =
+export const { setUserName, setUserEmail, setTokenId, setUserId, setUserRole,setUserStoreEmpty } =
   userInfoSlice.actions;
 
 export default userInfoSlice.reducer;

@@ -15,7 +15,7 @@ export default function GenericListBox({
   loading = false,
 }) {
   const [selected, setSelected] = useState(
-    selectedOption ? selectedOption : options[0]
+    selectedOption ? selectedOption : "select an option"
   );
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function GenericListBox({
       >
         <div className="relative">
           <ListboxButton
-            className={`focus:shadow block w-full rounded-lg py-1.5 pr-8 pl-3 text-left text-sm/6 border border-gray-300 text-gray-800 focus:outline-none ${
+            className={`capitalize focus:shadow block w-full rounded-lg py-1.5 pr-8 pl-3 text-left text-sm/6 border border-gray-300 text-gray-800 focus:outline-none ${
               disabled ? "bg-[#f6f7f7]" : "bg-white"
             }`}
           >

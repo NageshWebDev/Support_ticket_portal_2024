@@ -9,16 +9,38 @@ import AcknowledgeTicket from "./component/AcknowledgeTicket";
 import { Signup } from "./component/Signup";
 import { RequireAuth } from "./component/RequireAuth";
 import { useSelector } from "react-redux";
-import Dashboard from "./component/Dashboard";
+import AdminAssignedTicket from "./component/AdminAssignedTicket";
+import DashboardSuperAdmin from "./component/Dashboard/SuperAdmin";
+import DashboardAdmin from "./component/Dashboard/Admin";
+import DashboardUser from "./component/Dashboard/User";
+import HomePage from "./component/HomePage";
 
 function TicketViewWrapper() {
   const userRole = useSelector((state) => state.userInfoReducer.userRole);
 
-  return ["admin", "super-admin"].includes(userRole) ? (
+  return ["ADMIN", "SUPER_ADMIN"].includes(userRole) ? (
     <AcknowledgeTicket />
   ) : (
     <TicketDetails />
   );
+}
+
+function HomeWrapper() {
+  const userRole = useSelector((state) => state.userInfoReducer.userRole) || null;
+
+  switch (userRole) {
+    case "SUPER_ADMIN":
+      return <DashboardSuperAdmin />
+
+      case "ADMIN":
+        return <DashboardAdmin />
+
+        case "USER":
+          return <DashboardUser />
+  
+    default:
+      return <HomePage />
+  }
 }
 
 const router = createBrowserRouter([
@@ -27,7 +49,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Dashboard /> },
+      { index: true, element: <HomeWrapper /> },
       { path: "/login", element: <Login /> },
       { path: "/signup", element: <Signup /> },
       {
@@ -45,6 +67,10 @@ const router = createBrowserRouter([
           {
             path: "view/:ticketId",
             element: <TicketViewWrapper />,
+          },
+          {
+            path: "assigned/:adminId",
+            element: <AdminAssignedTicket />,
           },
         ],
       },

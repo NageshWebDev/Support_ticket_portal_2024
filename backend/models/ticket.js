@@ -24,12 +24,12 @@ const ticketSchema = new mongoose.Schema(
     },
     userDetails: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: "User",
+      ref: "USER",
       required: true,
     },
     assigneeDetails: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: "User",
+      ref: "USER",
       default: null,
     },
     status: {
@@ -43,6 +43,12 @@ const ticketSchema = new mongoose.Schema(
   },
   { timestamps: true } // Mongoose will automatically handle createdAt and updatedAt
 );
+
+ticketSchema.index({ userDetails: 1 });
+ticketSchema.index({ status: 1 });
+
+// Single Field Index (ascending)
+ticketSchema.index({ title: 1 });
 
 const Ticket = mongoose.model("Ticket", ticketSchema);
 module.exports = Ticket;
